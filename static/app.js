@@ -1,6 +1,27 @@
+// Create Dropdown Menu
+// Use D3 to Fetch Sample Data from JSON File
+d3.json("static/data/samples.json").then((data) => {
+
+    // Assign Sample Names to a Variable
+    var names = data.names;
+
+    // Select Dropdown Element and Assign it to a Variable
+    var selector = d3.select("#selDataset");
+
+    // Log Progress
+    console.log(names);
+
+    // Use the Array of Sample Names to Populate the Select Options Element within the Dropdown Element
+    names.forEach((name) => {
+    selector
+        .append("option")
+        .text(name)
+        .property("value", name);
+    });
+});
+
 // Create an Init Function to Populate Demographic Info, Horizontal Bar Chart and Bubble Chart with Data from the First Sample in the Dataset
-// Init Function also Populates Dropdown Menu with Array of all Sample Names
-function init (sample) {    
+function init () {    
 
     // Use D3 to Fetch Sample Data from JSON File
     d3.json("static/data/samples.json").then((data) => {
@@ -21,24 +42,6 @@ function init (sample) {
             demoInfoPanel.append("p").text(`${key}: ${value}`);
         })
 
-        // Dropdown Element
-        // Assign Sample Names to a Variable
-        var names = data.names;
-
-        // Select Dropdown Element and Assign it to a Variable
-        var selector = d3.select("#selDataset");
-
-        // Log Progress
-        console.log(names);
-
-        // Use the Array of Sample Names to Populate the Select Options Element within the Dropdown Element
-        names.forEach((name) => {
-            selector
-                .append("option")
-                .text(name)
-                .property("value", name);
-        });
-        
         // Chart Plotting
         // Assign Sample Values, Otu Ids, and Otu Labels to Variables for Bar Chart
         var sampleValues = data.samples[0].sample_values.slice(0, 10);
@@ -91,12 +94,73 @@ function init (sample) {
     })
 }
 
-function optionChange (newSample) {
+// Call updatePlotly() when a change takes place to the DOM
+d3.selectAll("#selDataset").on("change", optionChange);
 
-    // Demographic Info Panel
+// Create an OptionChange Function to Populate Demographic Info, Horizontal Bar Chart and Bubble Chart with Data from the Selected Sample
+function optionChange () {
 
+    // Use D3 to Fetch Sample Data from JSON File
+    d3.json("static/data/samples.json").then((data) => {
 
-    // 
+        // Use D3 to select the dropdown menu
+        var selector = d3.select("#selDataset");
+        
+        // Assign the value of the dropdown menu option to a variable
+        var newSample = selector.property("value");
+
+        // Create an Index Variable to Filter Data for Selected Sample
+        var index = data.names.findIndex(d => d === newSample);
+
+        // Log Progress
+        console.log(index);
+
+        // Demographic Info Panel
+        // Select Panel and Assign it to a Variable
+        var demoInfoPanel = d3.select("#sample-metadata");
+
+        // Clear Existing Metadata
+        demoInfoPanel.html("");
+
+        // Add Metadata for Selected Sample to Panel
+        Object.entries(data.metadata[index]).forEach(([key, value]) => {
+
+            demoInfoPanel.append("p").text(`${key}: ${value}`);
+        });
+
+        // Chart Plotting
+        // Assign Sample Values, Otu Ids, and Otu Labels to Variables for Bar Chart
+        var sampleValues = data.samples[index].sample_values.slice(0, 10);
+        var otuIds = data.samples[index].otu_ids.slice(0, 10);
+        var otuLabels = data.samples[index].otu_labels.slice(0, 10);
+
+        // Log Progress
+        console.log(sampleValues);
+        console.log(otuIds);
+        console.log(otuLabels);
+
+        // Assign Sample Values, Otu Ids, and Otu Labels to Variables for Bubble Chart
+        var sampleValuesAll = data.samples[index].sample_values;
+        var otuIdsAll = data.samples[index].otu_ids;
+        var otuLabelsAll = data.samples[index].otu_labels;
+
+        // Log Progress
+        console.log(sampleValuesAll);
+        console.log(otuIdsAll);
+        console.log(otuLabelsAll);
+
+        // Restyle Bar Chart
+        Plotly.restyle("bar", "x", [sampleValues.reverse()]);
+        Plotly.restyle("bar", "y", [otuIds.reverse().map(id => `OTU ${id}`)]);
+        Plotly.restyle("bar", "hovertext", [otuLabels.reverse()]);
+
+        // Restyle Bubble Chart
+        Plotly.restyle("bubble", "x", [otuIdsAll]);
+        Plotly.restyle("bubble", "y", [sampleValuesAll]);
+        Plotly.restyle("bubble", "marker.size", [sampleValuesAll]);
+        Plotly.restyle("bubble", "marker.color", [otuIdsAll]);
+        Plotly.restyle("bubble", "text", otuLabelsAll);
+    });
 }
 
 // Initialize Dashboard

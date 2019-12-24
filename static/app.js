@@ -94,7 +94,7 @@ function init () {
     })
 }
 
-// Call updatePlotly() when a change takes place to the DOM
+// Call OptionChange Function When a New Sample is Selected from Dropdown Menu
 d3.selectAll("#selDataset").on("change", optionChange);
 
 // Create an OptionChange Function to Populate Demographic Info, Horizontal Bar Chart and Bubble Chart with Data from the Selected Sample
@@ -103,13 +103,13 @@ function optionChange () {
     // Use D3 to Fetch Sample Data from JSON File
     d3.json("static/data/samples.json").then((data) => {
 
-        // Use D3 to select the dropdown menu
+        // Use D3 to Select the Dropdown Menu
         var selector = d3.select("#selDataset");
         
-        // Assign the value of the dropdown menu option to a variable
+        // Assign the Value of the Dropdown Menu Option to a Variable
         var newSample = selector.property("value");
 
-        // Create an Index Variable to Filter Data for Selected Sample
+        // Create an Index Variable to Filter Data for Selected New Sample
         var index = data.names.findIndex(d => d === newSample);
 
         // Log Progress
